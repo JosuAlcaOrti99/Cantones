@@ -1,21 +1,17 @@
 ---
-title: "Untitled"
+title: "Datos de cantones de Costa Rica - flexdashboard"
 output: 
   flexdashboard::flex_dashboard:
-    orientation: columns
-    vertical_layout: fill
+    theme: readable
+    orientation: rows
 ---
 
 ```{r setup, include=FALSE}
 library(flexdashboard)
 ```
 
-Column {data-width=650}
------------------------------------------------------------------------
-
-### Chart A
-
-```{r}
+```{r paquetes}
+# Carga de paquetes
 library(dplyr)
 library(sf)
 library(DT)
@@ -24,34 +20,79 @@ library(plotly)
 library(leaflet)
 ```
 
-Column {data-width=350}
------------------------------------------------------------------------
-```{r carga de datos}
+```{r lectura-datos}
+# Lectura de datos
 provincias <-
-  st_read(
-    dsn = "C:/Users/gf0604-1/Desktop/practicas git/Trabajo_mapa/cantones.geojson",
-    quiet = TRUE
+  st_read(dsn = "C:/Users/gf0604-1/Desktop/practicas git/Trabajo_mapa/provincias.geojson", quiet = TRUE) %>%
+  st_transform(4326)
+```
+
+
+Row {data-height=10}
+-----------------------------------------------------------------------
+
+### **Fuente de los datos: [Instituto Geográfico Nacional (IGN)](http://geos.snitcr.go.cr/be/IGN_5/wfs)**
+
+Row {data-height=590}
+-----------------------------------------------------------------------
+
+### Mapa
+
+```{r}
+# Mapa
+leaflet() %>%
+  setView(lng = -84.19452,
+          lat = 9.572735,
+          zoom = 7) %>%
+  addTiles(group = "OpenStreetMap") %>%
+  addPolygons(
+    data = provincias,
+    color = "blue",
+    opacity = 0.2,
+    weight = 1.5,
+    popup = paste(
+      paste("<a>provincias:</a>", provincias$canton),
+      paste("<a>Área:</a>", provincias$area, "km2"),
+      sep = "<br>"
+    ),
+    group = "provincias"
+  ) %>%
+  addLayersControl(baseGroups = c("OpenStreetMap"),
+                   overlayGroups = c("provincias"))
+```
+
+### Tabla
+
+```{r tabla}
+# Tabla
+provincias %>%
+  st_drop_geometry() %>%
+  select(provincia,area) %>%
+  arrange(desc(area)) %>%
+  datatable(
+    colnames = c("Provincia", "Área"),
+    options = list(
+      pageLength = 5,
+      language = list(url = '//cdn.datatables.net/plug-ins/1.10.11/i18n/Spanish.json')
+    )
   )
 ```
 
-### Chart B
+Row {data-height=400}
+-----------------------------------------------------------------------
 
-```{r}
-leaflet() %>% 
-  addTiles() %>% 
-  
-  #tabla
-  
-  
-```
+### Gráfico de cantones con mayor área
 
-### Grafico
-
-```{r}
-
-cantones %>% 
-  st_drop_geometry() %>% 
-  ggplot(aes(x=canton, y=area)) %>% 
-  geom_bar(stat = "identity")
+```{r grafico}
+# Gráfico
+grafico_ggplot2 <-
+  provincias %>%
+  st_drop_geometry() %>%
+  slice_max(area, n = 20) %>%
+  ggplot(aes(x = reorder(provincia, -area), y = area)) +
+  geom_bar(stat = "identity") +
+  xlab("Provincias") +
+  ylab("Área (km2)")
+ggplotly(grafico_ggplot2)
 ```
 
