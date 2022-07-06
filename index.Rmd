@@ -1,0 +1,57 @@
+---
+title: "Untitled"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+```
+
+Column {data-width=650}
+-----------------------------------------------------------------------
+
+### Chart A
+
+```{r}
+library(dplyr)
+library(sf)
+library(DT)
+library(ggplot2)
+library(plotly)
+library(leaflet)
+```
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+```{r carga de datos}
+provincias <-
+  st_read(
+    dsn = "C:/Users/gf0604-1/Desktop/practicas git/Trabajo_mapa/cantones.geojson",
+    quiet = TRUE
+  )
+```
+
+### Chart B
+
+```{r}
+leaflet() %>% 
+  addTiles() %>% 
+  
+  #tabla
+  
+  
+```
+
+### Grafico
+
+```{r}
+
+cantones %>% 
+  st_drop_geometry() %>% 
+  ggplot(aes(x=canton, y=area)) %>% 
+  geom_bar(stat = "identity")
+```
+
